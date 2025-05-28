@@ -6,3 +6,4 @@ albumentations
 pandas
 plotly
 gdown
+keras==3.8.0
