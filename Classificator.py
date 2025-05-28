@@ -77,7 +77,7 @@ def focal_loss(y_true, y_pred):
     return tf.reduce_sum(loss, axis=-1)
 
 @st.cache_resource
-def load_model(model_path):
+def load_downloaded_model(model_path):
      # Если файл не загружен — скачать
     #if not os.path.exists(MODEL_PATH):
     url = f'https://drive.google.com/uc?id={GOOGLE_DRIVE_FILE_ID}'
@@ -96,7 +96,7 @@ def load_model(model_path):
         st.error(f"Ошибка при загрузке модели: {e}")
         return None
 
-model = load_model(MODEL_PATH)
+model = load_downloaded_model(MODEL_PATH)
 classes = list(DISEASE_DESCRIPTIONS.keys())
 
 def preprocess_image(image):
