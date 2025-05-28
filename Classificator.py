@@ -8,6 +8,8 @@ import pandas as pd
 import plotly.express as px  # <-- Добавляем Plotly
 import os
 import gdown
+import keras.src.models.functional
+from keras.models import load_model
 
 # Настройка страницы
 st.set_page_config(
@@ -88,7 +90,7 @@ def load_model(model_path):
     # Загрузка модели
     try:
         custom_objects = {'focal_loss': focal_loss}  # если используется
-        model = tf.keras.models.load_model(MODEL_PATH, custom_objects=custom_objects)
+        model = load_model(MODEL_PATH, custom_objects=custom_objects)
         return model
     except Exception as e:
         st.error(f"Ошибка при загрузке модели: {e}")
