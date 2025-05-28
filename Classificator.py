@@ -19,10 +19,8 @@ st.set_page_config(
 
 # Параметры
 IMG_SIZE = 380
-MODEL_PATH = 'newDataset_model_128_20_unfrozen.keras' 
-if not os.path.exists(model_path):
-    url = "https://drive.google.com/uc?id=1HAF2H6WdPtNd_FTIdFJGrei1wC8GV0KJ"
-    gdown.download(url, model_path, quiet=False)
+MODEL_PATH = 'model_not_exists.keras' 
+GOOGLE_DRIVE_FILE_ID = "1HAF2H6WdPtNd_FTIdFJGrei1wC8GV0KJ"
     
 # Описания заболеваний (сокращённо для примера)
 DISEASE_DESCRIPTIONS = {
@@ -78,9 +76,19 @@ def focal_loss(y_true, y_pred):
 
 @st.cache_resource
 def load_model(model_path):
+     # Если файл не загружен — скачать
+    #if not os.path.exists(MODEL_PATH):
+    url = f'https://drive.google.com/uc?id={GOOGLE_DRIVE_FILE_ID}'
     try:
-        custom_objects = {'focal_loss': focal_loss}
-        model = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
+        gdown.download(url, MODEL_PATH, quiet=False)
+    except Exception as e:
+        st.error(f"Ошибка при скачивании модели: {e}")
+        return None
+
+    # Загрузка модели
+    try:
+        custom_objects = {'focal_loss': focal_loss}  # если используется
+        model = tf.keras.models.load_model(MODEL_PATH, custom_objects=custom_objects)
         return model
     except Exception as e:
         st.error(f"Ошибка при загрузке модели: {e}")
