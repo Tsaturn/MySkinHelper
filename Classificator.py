@@ -11,7 +11,6 @@ import gdown
 import keras.src.models.functional
 from keras.models import load_model
 
-# Настройка страницы
 st.set_page_config(
     page_title="Классификация кожных заболеваний",
     page_icon="🩺",
@@ -19,12 +18,10 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# Параметры
 IMG_SIZE = 380
 MODEL_PATH = 'model_not_exists.keras' 
 GOOGLE_DRIVE_FILE_ID = "1HAF2H6WdPtNd_FTIdFJGrei1wC8GV0KJ"
     
-# Описания заболеваний (сокращённо для примера)
 DISEASE_DESCRIPTIONS = {
     'Acitinic Keratosis': {
         'description': 'Актинический кератоз — предраковое состояние кожи, вызванное длительным воздействием ультрафиолета.',
@@ -78,7 +75,6 @@ def focal_loss(y_true, y_pred):
 
 @st.cache_resource
 def load_downloaded_model(model_path):
-     # Если файл не загружен — скачать
     #if not os.path.exists(MODEL_PATH):
     url = f'https://drive.google.com/uc?id={GOOGLE_DRIVE_FILE_ID}'
     try:
@@ -87,7 +83,6 @@ def load_downloaded_model(model_path):
         st.error(f"Ошибка при скачивании модели: {e}")
         return None
 
-    # Загрузка модели
     try:
         custom_objects = {'focal_loss': focal_loss}  # если используется
         model = load_model(MODEL_PATH, custom_objects=custom_objects)
@@ -105,7 +100,6 @@ def preprocess_image(image):
     transformed = test_transform(image=image)
     return np.expand_dims(transformed['image'], axis=0)
 
-# Интерфейс
 st.title("My skin helper")
 st.markdown("""
 Загрузите изображение кожи для анализа. Приложение поможет определить возможное* заболевание.
@@ -113,8 +107,6 @@ st.markdown("""
 st.markdown("""
 &nbsp;&nbsp;&nbsp;&nbsp;* не является диагнозом и несёт ознакомительную информацию. Требуется консультация со специалистом
 """, unsafe_allow_html=True)
-
-
 
 uploaded_file = st.file_uploader("Выберите файл", type=["jpg", "jpeg", "png"])
 
@@ -124,7 +116,10 @@ if uploaded_file is not None:
         col1, col2 = st.columns([1, 1])
         
         with col1:
-            st.image(image, caption="Загруженное изображение", use_container_width=True)
+            image_container_width = 600
+            image_width = int(image_container_width) * 0.5
+            st.image(image, caption="Загруженное изображение", width=int(image_width))
+            image_height = image.size[1] * (image_width / image.size[0])
         
         with col2:
             with st.spinner("Анализ изображения..."):
@@ -134,10 +129,9 @@ if uploaded_file is not None:
                     predicted_class = classes[np.argmax(prediction)]
                     confidence = prediction[0][np.argmax(prediction)]
                     
-                    # Создаём интерактивный график Plotly с улучшениями
                     df = pd.DataFrame({
                         'Заболевание': classes,
-                        'Вероятность (%)': (prediction[0] * 100).round(2)  # 2 знака после запятой
+                        'Вероятность (%)': (prediction[0] * 100).round(2)  
                     })
                     
                     fig = px.bar(
@@ -151,9 +145,8 @@ if uploaded_file is not None:
                         labels={'Вероятность (%)': 'Вероятность, %'},
                     )
                     
-                    # Настройки шрифтов и отображения
                     fig.update_traces(
-                        texttemplate='<b>%{text:.2f}%</b>',  # Форматируем до 2 знаков после запятой
+                        texttemplate='<b>%{text:.2f}%</b>',
                         textposition='outside',
                         hovertemplate='<b>%{y}</b><br>Вероятность: <b>%{x:.2f}%</b>',
                         textfont_size=14,
@@ -162,7 +155,7 @@ if uploaded_file is not None:
                     )
                     
                     fig.update_layout(
-                        height=image.height * 1.25,
+                        height=int(image_height), 
                         showlegend=False,
                         xaxis_title=None,
                         yaxis_title=None,
@@ -192,19 +185,17 @@ if uploaded_file is not None:
                         )
                     )
                     
-                    # Уменьшаем расстояние между столбцами
                     fig.update_traces(width=0.8)
                     
                     st.plotly_chart(fig, use_container_width=True)
         
-        # Результат и описание
         st.markdown(f"### Наиболее вероятный диагноз: **{predicted_class}** (Вероятность: {confidence:.2%})")
         
-        if predicted_class in ['Melanoma', 'Carcinoma']:
-            st.warning("⚠️ **Срочно обратитесь к дерматологу!**")
+        if predicted_class in ['Melanoma', 'Carcinoma', 'Acitinic Keratosis']:
+            st.warning("⚠️ **Срочно обратитесь к дерматологу!** ⚠️")
         
         st.markdown("---")
-        st.subheader("📚 Описание заболеваний")
+        st.subheader("Описание заболеваний")
         for disease, info in DISEASE_DESCRIPTIONS.items():
             with st.expander(f"**{disease}**"):
                 st.markdown(f"**Описание:** {info['description']}")
