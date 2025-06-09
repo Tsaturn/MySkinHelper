@@ -13,7 +13,7 @@ from keras.models import load_model
 
 st.set_page_config(
     page_title="My Skin Helper",
-    page_icon="🩺",
+    page_icon="icon.png",
     layout="wide",
     initial_sidebar_state="auto"
 )
