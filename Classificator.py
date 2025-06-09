@@ -5,14 +5,14 @@ from PIL import Image
 import albumentations as A
 import tensorflow.keras.backend as K
 import pandas as pd
-import plotly.express as px  # <-- Добавляем Plotly
+import plotly.express as px
 import os
 import gdown
 import keras.src.models.functional
 from keras.models import load_model
 
 st.set_page_config(
-    page_title="Классификация кожных заболеваний",
+    page_title="My Skin Helper",
     page_icon="🩺",
     layout="wide",
     initial_sidebar_state="auto"
@@ -75,7 +75,6 @@ def focal_loss(y_true, y_pred):
 
 @st.cache_resource
 def load_downloaded_model(model_path):
-    #if not os.path.exists(MODEL_PATH):
     url = f'https://drive.google.com/uc?id={GOOGLE_DRIVE_FILE_ID}'
     try:
         gdown.download(url, MODEL_PATH, quiet=False)
@@ -95,18 +94,14 @@ model = load_downloaded_model(MODEL_PATH)
 classes = list(DISEASE_DESCRIPTIONS.keys())
 
 def preprocess_image(image):
-    test_transform = A.Compose([A.Resize(width=IMG_SIZE, height=IMG_SIZE)])
+    transformator = A.Compose([A.Resize(width=IMG_SIZE, height=IMG_SIZE)])
     image = np.array(image)
-    transformed = test_transform(image=image)
+    transformed = transformator(image=image)
     return np.expand_dims(transformed['image'], axis=0)
 
 st.title("My skin helper")
-st.markdown("""
-Загрузите изображение кожи для анализа. Приложение поможет определить возможное* заболевание.
-""")
-st.markdown("""
-&nbsp;&nbsp;&nbsp;&nbsp;* не является диагнозом и несёт ознакомительную информацию. Требуется консультация со специалистом
-""", unsafe_allow_html=True)
+st.markdown("""Загрузите изображение кожи для анализа. Приложение поможет определить возможное* заболевание.""")
+st.markdown("""&nbsp;&nbsp;&nbsp;&nbsp;* не является диагнозом и несёт ознакомительную информацию. Требуется консультация со специалистом""", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Выберите файл", type=["jpg", "jpeg", "png"])
 
@@ -192,7 +187,7 @@ if uploaded_file is not None:
         st.markdown(f"### Наиболее вероятный диагноз: **{predicted_class}** (Вероятность: {confidence:.2%})")
         
         if predicted_class in ['Melanoma', 'Carcinoma', 'Acitinic Keratosis']:
-            st.warning("⚠️ **Срочно обратитесь к дерматологу!** ⚠️")
+            st.warning("**Срочно обратитесь к дерматологу!**")
         
         st.markdown("---")
         st.subheader("Описание заболеваний")
